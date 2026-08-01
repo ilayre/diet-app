@@ -402,6 +402,13 @@ class App {
     const streak = await this.calculateStreak(allLogs);
     document.getElementById('streak-value').textContent = streak;
 
+    // Calculate today's macro nutrition totals
+    const totalProtein = Math.round(todayLogs.reduce((sum, l) => sum + (l.protein_g || 0), 0) * 10) / 10;
+    const totalCarbs = Math.round(todayLogs.reduce((sum, l) => sum + (l.carbs_g || 0), 0) * 10) / 10;
+    const totalFat = Math.round(todayLogs.reduce((sum, l) => sum + (l.fat_g || 0), 0) * 10) / 10;
+
+    this.renderNutritionSummary(totalProtein, totalCarbs, totalFat);
+
     // Render 1-Tap Favorites strip
     await this.renderFavoritesStrip();
 
@@ -413,6 +420,35 @@ class App {
 
     // Auto-select meal type based on time
     this.autoSelectMealType();
+  }
+
+  renderNutritionSummary(pG, cG, fG) {
+    const pCal = Math.round(pG * 4);
+    const cCal = Math.round(cG * 4);
+    const fCal = Math.round(fG * 9);
+    const totalMacroCal = pCal + cCal + fCal;
+
+    const elProt = document.getElementById('total-protein');
+    const elCarb = document.getElementById('total-carbs');
+    const elFat = document.getElementById('total-fat');
+    if (!elProt || !elCarb || !elFat) return;
+
+    elProt.textContent = `${pG}g`;
+    document.getElementById('cal-protein').textContent = `${pCal} kcal`;
+    elCarb.textContent = `${cG}g`;
+    document.getElementById('cal-carbs').textContent = `${cCal} kcal`;
+    elFat.textContent = `${fG}g`;
+    document.getElementById('cal-fat').textContent = `${fCal} kcal`;
+
+    const pPct = totalMacroCal > 0 ? Math.round((pCal / totalMacroCal) * 100) : 0;
+    const cPct = totalMacroCal > 0 ? Math.round((cCal / totalMacroCal) * 100) : 0;
+    const fPct = totalMacroCal > 0 ? Math.max(0, 100 - pPct - cPct) : 0;
+
+    document.getElementById('macro-bar-protein').style.width = `${pPct}%`;
+    document.getElementById('macro-bar-carbs').style.width = `${cPct}%`;
+    document.getElementById('macro-bar-fat').style.width = `${fPct}%`;
+
+    document.getElementById('macro-ratio-label').textContent = `${pPct}% P · ${cPct}% C · ${fPct}% F`;
   }
 
   updateCalorieRing(budget, consumed, remaining) {
@@ -557,11 +593,15 @@ class App {
       </div>`;
       for (const item of items) {
         const isStarred = starredNames.has(item.food_name.toLowerCase());
+        const metaServing = item.serving_size ? item.serving_size + (item.serving_unit || 'g') : '';
+        const metaMacros = (item.protein_g != null || item.carbs_g != null || item.fat_g != null)
+          ? ` · P: ${item.protein_g || 0}g  C: ${item.carbs_g || 0}g  F: ${item.fat_g || 0}g`
+          : '';
         html += `<div class="log-item" data-id="${item.id}">
           <div class="log-item-left">
             <div class="log-item-info">
               <div class="log-item-name">${this.escapeHtml(item.food_name)}</div>
-              <div class="log-item-meta">${item.serving_size ? item.serving_size + (item.serving_unit || 'g') : ''}</div>
+              <div class="log-item-meta">${metaServing + metaMacros}</div>
             </div>
           </div>
           <span class="log-item-calories">${Math.round(item.calories)}</span>
@@ -976,7 +1016,11 @@ class App {
     if (amount <= 0) { this.toast('Enter a valid serving size'); return; }
 
     const food = this.selectedFood;
-    const calories = food.calories_per_100g * (amount / 100);
+    const factor = amount / 100;
+    const calories = Math.round(food.calories_per_100g * factor);
+    const protein_g = Math.round((food.protein_per_100g || 0) * factor * 10) / 10;
+    const carbs_g = Math.round((food.carbs_per_100g || 0) * factor * 10) / 10;
+    const fat_g = Math.round((food.fat_per_100g || 0) * factor * 10) / 10;
 
     // Save food item to local cache & increment use count
     food.use_count = (food.use_count || 0) + 1;
@@ -987,7 +1031,10 @@ class App {
     await this.db.put('food_logs', {
       food_item_id: food.id,
       food_name: food.name,
-      calories: Math.round(calories),
+      calories: calories,
+      protein_g: protein_g,
+      carbs_g: carbs_g,
+      fat_g: fat_g,
       serving_size: amount,
       serving_unit: 'g',
       meal_type: this.selectedMeal,
@@ -1001,7 +1048,10 @@ class App {
     if (saveFavCheck && saveFavCheck.checked) {
       await this.db.put('favorites', {
         name: food.name,
-        calories: Math.round(calories),
+        calories: calories,
+        protein_g: protein_g,
+        carbs_g: carbs_g,
+        fat_g: fat_g,
         serving_size: amount,
         serving_unit: 'g',
         meal_type: this.selectedMeal,
@@ -1013,7 +1063,7 @@ class App {
 
     this.closeModal('food-modal');
     await this.renderDashboard();
-    this.toast(`Logged ${Math.round(calories)} kcal ✅`);
+    this.toast(`Logged ${calories} kcal ✅`);
   }
 
   // ── Quick Add ──
@@ -1047,10 +1097,17 @@ class App {
 
     if (!calories || calories <= 0) { this.toast('Enter valid calories'); return; }
 
+    const protein_g = Math.round((calories * 0.25 / 4) * 10) / 10;
+    const carbs_g = Math.round((calories * 0.50 / 4) * 10) / 10;
+    const fat_g = Math.round((calories * 0.25 / 9) * 10) / 10;
+
     await this.db.put('food_logs', {
       food_item_id: null,
       food_name: desc,
       calories,
+      protein_g,
+      carbs_g,
+      fat_g,
       serving_size: null,
       serving_unit: null,
       meal_type: meal,
@@ -1065,6 +1122,9 @@ class App {
       await this.db.put('favorites', {
         name: desc,
         calories: calories,
+        protein_g: protein_g,
+        carbs_g: carbs_g,
+        fat_g: fat_g,
         serving_size: null,
         serving_unit: null,
         meal_type: meal,

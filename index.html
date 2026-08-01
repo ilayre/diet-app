@@ -123,6 +123,54 @@
         </div>
       </div>
 
+      <!-- Daily Nutrition Summary Card -->
+      <div class="card" id="nutrition-card">
+        <div class="card-header">
+          <h2 class="card-title">Nutrition Summary</h2>
+          <span class="card-subtitle-muted">Macros</span>
+        </div>
+        <div class="card-body">
+          <div class="macro-grid">
+            <div class="macro-card protein">
+              <div class="macro-card-header">
+                <span class="macro-icon">🥩</span>
+                <span class="macro-title">Protein</span>
+              </div>
+              <div class="macro-value" id="total-protein">0g</div>
+              <div class="macro-cal" id="cal-protein">0 kcal</div>
+            </div>
+            <div class="macro-card carbs">
+              <div class="macro-card-header">
+                <span class="macro-icon">🍞</span>
+                <span class="macro-title">Carbs</span>
+              </div>
+              <div class="macro-value" id="total-carbs">0g</div>
+              <div class="macro-cal" id="cal-carbs">0 kcal</div>
+            </div>
+            <div class="macro-card fat">
+              <div class="macro-card-header">
+                <span class="macro-icon">🥑</span>
+                <span class="macro-title">Fat</span>
+              </div>
+              <div class="macro-value" id="total-fat">0g</div>
+              <div class="macro-cal" id="cal-fat">0 kcal</div>
+            </div>
+          </div>
+          
+          <div class="macro-bar-container">
+            <div class="macro-bar-labels">
+              <span>Ratio Breakdown</span>
+              <span id="macro-ratio-label">0% P · 0% C · 0% F</span>
+            </div>
+            <div class="macro-bar">
+              <div class="macro-bar-fill protein-fill" id="macro-bar-protein" style="width: 0%"></div>
+              <div class="macro-bar-fill carbs-fill" id="macro-bar-carbs" style="width: 0%"></div>
+              <div class="macro-bar-fill fat-fill" id="macro-bar-fat" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 1-Tap Favorites Card -->
       <div class="card" id="favorites-card">
         <div class="card-header">

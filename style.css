@@ -539,6 +539,106 @@ select.form-input {
   color: var(--text-muted);
 }
 
+/* ---------- Daily Nutrition Summary ---------- */
+.macro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.macro-card {
+  padding: 12px 10px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: transform var(--transition);
+}
+
+.macro-card:hover {
+  transform: translateY(-1px);
+}
+
+.macro-card.protein {
+  background: #edf4fc;
+}
+
+.macro-card.carbs {
+  background: #fef6e7;
+}
+
+.macro-card.fat {
+  background: #edf7ed;
+}
+
+.macro-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.macro-icon {
+  font-size: 0.85rem;
+}
+
+.macro-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.macro-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+
+.macro-card.protein .macro-value { color: #3b82f6; }
+.macro-card.carbs .macro-value { color: #f59e0b; }
+.macro-card.fat .macro-value { color: #10b981; }
+
+.macro-cal {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Macro Distribution Bar */
+.macro-bar-container {
+  padding-top: 4px;
+}
+
+.macro-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.macro-bar {
+  display: flex;
+  height: 8px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.macro-bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.macro-bar-fill.protein-fill { background: #3b82f6; }
+.macro-bar-fill.carbs-fill { background: #f59e0b; }
+.macro-bar-fill.fat-fill { background: #10b981; }
+
 /* ---------- 1-Tap Favorites Strip ---------- */
 .favorites-strip {
   display: flex;
