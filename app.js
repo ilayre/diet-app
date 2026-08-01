@@ -339,6 +339,10 @@ class App {
       }
     });
 
+    // Edit log modal
+    document.getElementById('edit-log-close').addEventListener('click', () => this.closeModal('edit-log-modal'));
+    document.getElementById('edit-log-form').addEventListener('submit', (e) => this.handleEditLog(e));
+
     // Weight modal
     document.getElementById('weight-modal-close').addEventListener('click', () => this.closeModal('weight-modal'));
     document.getElementById('weight-form').addEventListener('submit', (e) => this.handleWeightLog(e));
@@ -648,6 +652,7 @@ class App {
           </div>
           <span class="log-item-calories">${Math.round(item.calories)}</span>
           <div class="log-item-actions">
+            <button class="log-item-btn log-item-edit" title="Edit Nutrition" data-edit-id="${item.id}">✏️</button>
             <button class="log-item-btn log-item-star ${isStarred ? 'is-starred' : ''}" title="${isStarred ? 'Unstar' : 'Pin to 1-Tap Favorites'}" data-star-name="${this.escapeHtml(item.food_name)}" data-star-cal="${item.calories}" data-star-size="${item.serving_size || ''}" data-star-unit="${item.serving_unit || ''}" data-star-meal="${item.meal_type || 'snack'}">★</button>
             <button class="log-item-btn log-item-repeat" title="Log 1-Tap Again" data-repeat-id="${item.id}">+</button>
             <button class="log-item-btn log-item-delete" title="Delete" data-delete-id="${item.id}">&times;</button>
@@ -722,6 +727,60 @@ class App {
         this.toast('Entry removed');
       });
     });
+
+    // Bind edit buttons
+    list.querySelectorAll('.log-item-edit').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.editId);
+        const logItem = logs.find(l => l.id === id);
+        if (logItem) this.openEditLogModal(logItem);
+      });
+    });
+  }
+
+  openEditLogModal(logItem) {
+    document.getElementById('edit-log-name').textContent = logItem.food_name;
+    document.getElementById('edit-log-id').value = logItem.id;
+    document.getElementById('edit-log-calories').value = Math.round(logItem.calories);
+    document.getElementById('edit-log-protein').value = logItem.protein_g != null ? logItem.protein_g : '';
+    document.getElementById('edit-log-carbs').value = logItem.carbs_g != null ? logItem.carbs_g : '';
+    document.getElementById('edit-log-fat').value = logItem.fat_g != null ? logItem.fat_g : '';
+    this.showModal('edit-log-modal');
+  }
+
+  async handleEditLog(e) {
+    e.preventDefault();
+    const id = parseInt(document.getElementById('edit-log-id').value);
+    const allLogs = await this.db.getAll('food_logs');
+    const logItem = allLogs.find(l => l.id === id);
+    if (!logItem) return;
+
+    logItem.calories = parseFloat(document.getElementById('edit-log-calories').value) || 0;
+    logItem.protein_g = parseFloat(document.getElementById('edit-log-protein').value) || 0;
+    logItem.carbs_g = parseFloat(document.getElementById('edit-log-carbs').value) || 0;
+    logItem.fat_g = parseFloat(document.getElementById('edit-log-fat').value) || 0;
+
+    await this.db.put('food_logs', logItem);
+
+    // Also update the stored food_item if it exists, so future logs use the corrected values
+    if (logItem.food_item_id) {
+      try {
+        const foodItem = await this.db.get('food_items', logItem.food_item_id);
+        if (foodItem) {
+          const servingG = logItem.serving_size || 100;
+          foodItem.calories_per_100g = (logItem.calories / servingG) * 100;
+          foodItem.protein_per_100g = (logItem.protein_g / servingG) * 100;
+          foodItem.carbs_per_100g = (logItem.carbs_g / servingG) * 100;
+          foodItem.fat_per_100g = (logItem.fat_g / servingG) * 100;
+          await this.db.put('food_items', foodItem);
+        }
+      } catch (_) { /* food_item may not exist */ }
+    }
+
+    this.closeModal('edit-log-modal');
+    await this.renderDashboard();
+    this.toast(`Updated ${logItem.food_name} ✏️`);
   }
 
   autoSelectMealType() {

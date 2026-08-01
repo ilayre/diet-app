@@ -1053,6 +1053,20 @@ select.form-input {
   color: var(--text-primary);
 }
 
+.log-item-edit:hover {
+  color: var(--accent);
+}
+
+.edit-log-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+}
+
 .log-item-star {
   color: #d1d1e0;
 }
