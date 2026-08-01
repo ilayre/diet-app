@@ -224,14 +224,20 @@ class App {
     await this.db.init();
     this.profile = await this.db.get('profile', 1);
 
+    // Always bind events first so UI is interactive regardless of render errors
+    this.bindEvents();
+
     if (!this.profile) {
       this.showView('setup');
     } else {
       this.showView('dashboard');
-      await this.renderDashboard();
+      try {
+        await this.renderDashboard();
+      } catch (err) {
+        console.error('Dashboard render error:', err);
+      }
     }
 
-    this.bindEvents();
     this.registerSW();
   }
 
