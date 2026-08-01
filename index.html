@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="Personal caloric deficit tracker for weight loss">
+  <meta name="theme-color" content="#0b0b12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Deficit — Weight Loss Tracker</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ==================== SETUP VIEW ==================== -->
+    <section id="setup-view" class="view">
+      <div class="setup-container">
+        <div class="setup-icon">🔥</div>
+        <h1 class="setup-title">Deficit</h1>
+        <p class="setup-subtitle">Your personal weight-loss engine.<br>Let's set things up.</p>
+
+        <form id="setup-form" class="form">
+          <div class="form-group">
+            <label class="form-label" for="setup-name">Your Name</label>
+            <input class="form-input" type="text" id="setup-name" placeholder="e.g. Ilay" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="setup-gender">Gender</label>
+              <select class="form-input" id="setup-gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setup-age">Age</label>
+              <input class="form-input" type="number" id="setup-age" min="15" max="100" placeholder="28" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="setup-height">Height (cm)</label>
+              <input class="form-input" type="number" id="setup-height" min="100" max="250" step="0.1" placeholder="175" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setup-weight">Weight (kg)</label>
+              <input class="form-input" type="number" id="setup-weight" min="30" max="300" step="0.1" placeholder="85" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setup-activity">Activity Level</label>
+            <select class="form-input" id="setup-activity" required>
+              <option value="sedentary">Sedentary — desk job, little exercise</option>
+              <option value="light">Light — 1-3 days/week exercise</option>
+              <option value="moderate" selected>Moderate — 3-5 days/week</option>
+              <option value="active">Active — 6-7 days/week</option>
+              <option value="very_active">Very Active — athlete / physical job</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Daily Deficit Target</label>
+            <div class="deficit-slider-container">
+              <input class="deficit-slider" type="range" id="setup-deficit" min="200" max="1000" step="50" value="500">
+              <div class="deficit-slider-labels">
+                <span class="deficit-value" id="setup-deficit-value">500 kcal/day</span>
+                <span class="deficit-rate" id="setup-deficit-rate">≈ 0.45 kg/week</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg">Start Tracking →</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== DASHBOARD VIEW ==================== -->
+    <section id="dashboard-view" class="view hidden">
+      <header class="dash-header">
+        <div>
+          <p class="dash-greeting" id="dash-greeting">Good morning</p>
+          <h1 class="dash-date" id="dash-date">Today</h1>
+        </div>
+        <button class="btn-icon" id="btn-log-weight" title="Log weight">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
+          <span>Weight</span>
+        </button>
+      </header>
+
+      <!-- Calorie Ring -->
+      <div class="calorie-display" id="calorie-display">
+        <svg class="calorie-ring" viewBox="0 0 200 200">
+          <circle class="ring-track" cx="100" cy="100" r="85"/>
+          <circle class="ring-progress" id="ring-progress" cx="100" cy="100" r="85"/>
+        </svg>
+        <div class="calorie-center">
+          <span class="calorie-number" id="remaining-calories">—</span>
+          <span class="calorie-unit">kcal left</span>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-value" id="budget-value">—</span>
+          <span class="stat-label">Budget</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="consumed-value">0</span>
+          <span class="stat-label">Consumed</span>
+        </div>
+        <div class="stat-card accent">
+          <span class="stat-value" id="streak-value">0</span>
+          <span class="stat-label">Day Streak 🔥</span>
+        </div>
+      </div>
+
+      <!-- Today's Log -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Today's Log</h2>
+        </div>
+        <div id="todays-log-list" class="log-list">
+          <div class="log-empty" id="log-empty">
+            <p>No food logged yet today.</p>
+            <p class="text-muted">Tap below to start logging.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-primary btn-action" id="btn-log-food">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Log Food
+        </button>
+        <button class="btn btn-secondary btn-action" id="btn-quick-add">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Quick Add
+        </button>
+      </div>
+
+      <!-- Weight Trend -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Weight Trend</h2>
+          <span class="card-badge" id="weight-change-badge">—</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="weight-chart"></canvas>
+        </div>
+        <div class="weight-summary" id="weight-summary">
+          <span>Log your weight to see trends</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HISTORY VIEW ==================== -->
+    <section id="history-view" class="view hidden">
+      <header class="view-header">
+        <h1 class="view-title">History</h1>
+      </header>
+
+      <!-- Weekly Summary Card -->
+      <div class="card" id="weekly-summary-card">
+        <div class="card-header">
+          <h2 class="card-title">This Week</h2>
+        </div>
+        <div class="weekly-stats">
+          <div class="weekly-stat">
+            <span class="weekly-stat-value" id="week-avg-deficit">—</span>
+            <span class="weekly-stat-label">Avg Deficit</span>
+          </div>
+          <div class="weekly-stat">
+            <span class="weekly-stat-value" id="week-days-in-deficit">—</span>
+            <span class="weekly-stat-label">Days in Deficit</span>
+          </div>
+          <div class="weekly-stat">
+            <span class="weekly-stat-value" id="week-projected-loss">—</span>
+            <span class="weekly-stat-label">Projected Loss</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calorie History Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Daily Calories</h2>
+        </div>
+        <div class="chart-container chart-tall">
+          <canvas id="calorie-history-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Day List -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Day by Day</h2>
+        </div>
+        <div id="history-day-list" class="day-list"></div>
+      </div>
+    </section>
+
+    <!-- ==================== SETTINGS VIEW ==================== -->
+    <section id="settings-view" class="view hidden">
+      <header class="view-header">
+        <h1 class="view-title">Settings</h1>
+      </header>
+
+      <form id="settings-form" class="form">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Profile</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label" for="settings-name">Name</label>
+              <input class="form-input" type="text" id="settings-name">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="settings-gender">Gender</label>
+                <select class="form-input" id="settings-gender">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="settings-age">Age</label>
+                <input class="form-input" type="number" id="settings-age" min="15" max="100">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="settings-height">Height (cm)</label>
+                <input class="form-input" type="number" id="settings-height" min="100" max="250" step="0.1">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="settings-activity">Activity</label>
+                <select class="form-input" id="settings-activity">
+                  <option value="sedentary">Sedentary</option>
+                  <option value="light">Light</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="active">Active</option>
+                  <option value="very_active">Very Active</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Deficit Target</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <div class="deficit-slider-container">
+                <input class="deficit-slider" type="range" id="settings-deficit" min="200" max="1000" step="50" value="500">
+                <div class="deficit-slider-labels">
+                  <span class="deficit-value" id="settings-deficit-value">500 kcal/day</span>
+                  <span class="deficit-rate" id="settings-deficit-rate">≈ 0.45 kg/week</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+      </form>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Data</h2>
+        </div>
+        <div class="card-body">
+          <div class="settings-actions">
+            <button class="btn btn-secondary" id="btn-export-data">📦 Export All Data (JSON)</button>
+            <button class="btn btn-danger" id="btn-clear-data">🗑️ Clear All Data</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="about-info">
+            <p class="text-muted">Deficit v1.0 — Personal Weight Loss Tracker</p>
+            <p class="text-muted text-small">All data stored locally on your device. Nothing is sent to any server.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== BOTTOM NAVIGATION ==================== -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" data-view="dashboard">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-btn" data-view="history">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>History</span>
+    </button>
+    <button class="nav-btn" data-view="settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- ==================== FOOD SEARCH MODAL ==================== -->
+  <div class="modal-overlay hidden" id="food-modal">
+    <div class="modal-content modal-full">
+      <div class="modal-header">
+        <h2 class="modal-title">Log Food</h2>
+        <button class="btn-close" id="food-modal-close">&times;</button>
+      </div>
+
+      <!-- Meal Type Tabs -->
+      <div class="meal-tabs" id="meal-tabs">
+        <button class="meal-tab active" data-meal="breakfast">☀️ Breakfast</button>
+        <button class="meal-tab" data-meal="lunch">🌤️ Lunch</button>
+        <button class="meal-tab" data-meal="dinner">🌙 Dinner</button>
+        <button class="meal-tab" data-meal="snack">🍿 Snack</button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-container">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="food-search-input" placeholder="Search food (e.g. chicken breast)..." autocomplete="off">
+        <div class="search-spinner hidden" id="search-spinner"></div>
+      </div>
+
+      <!-- Barcode Input -->
+      <div class="barcode-row">
+        <input class="form-input barcode-input" type="text" id="barcode-input" placeholder="Or enter barcode...">
+        <button class="btn btn-secondary btn-sm" id="btn-barcode-lookup">Scan</button>
+      </div>
+
+      <!-- Search Results / Recent -->
+      <div class="food-list-section">
+        <div id="food-recent-section">
+          <h3 class="section-label">Recent & Frequent</h3>
+          <div id="food-recent-list" class="food-list"></div>
+        </div>
+        <div id="food-search-section" class="hidden">
+          <h3 class="section-label" id="search-results-label">Results</h3>
+          <div id="food-search-results" class="food-list"></div>
+        </div>
+      </div>
+
+      <!-- Food Detail (shown after selecting a food) -->
+      <div class="food-detail hidden" id="food-detail">
+        <div class="food-detail-header">
+          <button class="btn-back" id="food-detail-back">← Back</button>
+          <h3 class="food-detail-name" id="food-detail-name"></h3>
+        </div>
+        <p class="food-detail-brand" id="food-detail-brand"></p>
+
+        <div class="serving-selector">
+          <div class="form-group">
+            <label class="form-label">Serving Size</label>
+            <div class="serving-input-row">
+              <input class="form-input serving-amount" type="number" id="serving-amount" min="1" step="1" value="100">
+              <select class="form-input serving-unit" id="serving-unit">
+                <option value="g">grams (g)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="nutrition-preview">
+          <div class="nutrition-big">
+            <span class="nutrition-big-value" id="preview-calories">—</span>
+            <span class="nutrition-big-label">kcal</span>
+          </div>
+          <div class="nutrition-macros">
+            <div class="macro"><span id="preview-protein">—</span><span>Protein</span></div>
+            <div class="macro"><span id="preview-carbs">—</span><span>Carbs</span></div>
+            <div class="macro"><span id="preview-fat">—</span><span>Fat</span></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" id="btn-confirm-food">Log This Food</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== QUICK ADD MODAL ==================== -->
+  <div class="modal-overlay hidden" id="quick-add-modal">
+    <div class="modal-content modal-compact">
+      <div class="modal-header">
+        <h2 class="modal-title">⚡ Quick Add</h2>
+        <button class="btn-close" id="quick-add-close">&times;</button>
+      </div>
+      <form id="quick-add-form" class="form">
+        <div class="form-group">
+          <label class="form-label" for="quick-add-calories">Calories</label>
+          <input class="form-input form-input-lg" type="number" id="quick-add-calories" min="1" max="5000" placeholder="e.g. 350" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quick-add-desc">Description (optional)</label>
+          <input class="form-input" type="text" id="quick-add-desc" placeholder="e.g. slice of pizza">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meal</label>
+          <div class="meal-tabs compact" id="quick-add-meal-tabs">
+            <button type="button" class="meal-tab active" data-meal="snack">🍿 Snack</button>
+            <button type="button" class="meal-tab" data-meal="breakfast">☀️</button>
+            <button type="button" class="meal-tab" data-meal="lunch">🌤️</button>
+            <button type="button" class="meal-tab" data-meal="dinner">🌙</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Add</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== WEIGHT MODAL ==================== -->
+  <div class="modal-overlay hidden" id="weight-modal">
+    <div class="modal-content modal-compact">
+      <div class="modal-header">
+        <h2 class="modal-title">⚖️ Log Weight</h2>
+        <button class="btn-close" id="weight-modal-close">&times;</button>
+      </div>
+      <form id="weight-form" class="form">
+        <div class="form-group">
+          <label class="form-label" for="weight-input">Weight (kg)</label>
+          <input class="form-input form-input-lg" type="number" id="weight-input" min="30" max="300" step="0.1" placeholder="e.g. 82.3" required>
+        </div>
+        <p class="text-muted text-center" id="weight-date-label">Today</p>
+        <button type="submit" class="btn btn-primary btn-lg">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST ==================== -->
+  <div class="toast hidden" id="toast">
+    <span id="toast-message"></span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
