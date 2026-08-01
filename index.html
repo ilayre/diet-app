@@ -167,57 +167,14 @@
         </div>
       </div>
 
-      <!-- 2x2 Meal Category Grid (Breakfast, Lunch, Dinner, Snacks) -->
-      <div class="meal-grid-section">
-        <div class="meal-grid">
-          <!-- Breakfast -->
-          <div class="meal-card breakfast-card" data-meal="breakfast">
-            <div class="meal-card-top">
-              <span class="meal-card-title">Breakfast</span>
-              <button class="meal-add-btn" data-meal="breakfast" title="Log Breakfast">+</button>
-            </div>
-            <div class="meal-card-body">
-              <div class="meal-card-icon-wrap">🍳</div>
-              <div class="meal-card-cal" id="meal-cal-breakfast">0 kcal</div>
-            </div>
-          </div>
-
-          <!-- Lunch -->
-          <div class="meal-card lunch-card" data-meal="lunch">
-            <div class="meal-card-top">
-              <span class="meal-card-title">Lunch</span>
-              <button class="meal-add-btn" data-meal="lunch" title="Log Lunch">+</button>
-            </div>
-            <div class="meal-card-body">
-              <div class="meal-card-icon-wrap">🥗</div>
-              <div class="meal-card-cal" id="meal-cal-lunch">0 kcal</div>
-            </div>
-          </div>
-
-          <!-- Dinner -->
-          <div class="meal-card dinner-card" data-meal="dinner">
-            <div class="meal-card-top">
-              <span class="meal-card-title">Dinner</span>
-              <button class="meal-add-btn" data-meal="dinner" title="Log Dinner">+</button>
-            </div>
-            <div class="meal-card-body">
-              <div class="meal-card-icon-wrap">🍽️</div>
-              <div class="meal-card-cal" id="meal-cal-dinner">0 kcal</div>
-            </div>
-          </div>
-
-          <!-- Snacks -->
-          <div class="meal-card snack-card" data-meal="snack">
-            <div class="meal-card-top">
-              <span class="meal-card-title">Snacks</span>
-              <button class="meal-add-btn" data-meal="snack" title="Log Snack">+</button>
-            </div>
-            <div class="meal-card-body">
-              <div class="meal-card-icon-wrap">🍿</div>
-              <div class="meal-card-cal" id="meal-cal-snack">0 kcal</div>
-            </div>
-          </div>
-        </div>
+      <!-- Quick Actions (Log Food, Quick Add) -->
+      <div class="quick-actions-section">
+        <button class="btn btn-primary btn-lg action-btn" id="btn-log-food-main" title="Log Food">
+          <span class="action-icon">🔍</span> Log Food
+        </button>
+        <button class="btn btn-secondary btn-lg action-btn" id="btn-quick-add-main" title="Quick Add">
+          <span class="action-icon">⚡</span> Quick Add
+        </button>
       </div>
 
       <!-- Hidden elements for backward compatibility -->

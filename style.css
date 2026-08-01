@@ -473,13 +473,26 @@ select.form-input {
 
 /* ---------- Hero Calorie Arc Gauge Card ---------- */
 .hero-gauge-card {
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #f9f9fb 100%);
   border-radius: 28px;
   padding: 24px 20px 20px;
   margin-bottom: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05), inset 0 2px 0 rgba(255,255,255,0.7);
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.hero-gauge-card::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(254, 202, 87, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .calorie-display {
@@ -492,6 +505,7 @@ select.form-input {
 .calorie-arc-svg {
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 4px 10px rgba(255, 159, 67, 0.3));
 }
 
 .arc-track {
@@ -501,7 +515,7 @@ select.form-input {
 .arc-progress {
   stroke-dasharray: 235.619;
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .calorie-center {
@@ -511,6 +525,12 @@ select.form-input {
   transform: translateX(-50%);
   text-align: center;
   width: 100%;
+  animation: floatCal 3s ease-in-out infinite;
+}
+
+@keyframes floatCal {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-3px); }
 }
 
 .calorie-number {
@@ -518,6 +538,7 @@ select.form-input {
   font-weight: 900;
   letter-spacing: -0.04em;
   color: #1a1a2e;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.05);
   line-height: 1;
 }
 
@@ -583,111 +604,52 @@ select.form-input {
   color: var(--text-muted);
 }
 
-/* ---------- 2x2 Meal Category Cards Grid ---------- */
-.meal-grid-section {
-  margin-bottom: 20px;
-}
-
-.meal-grid {
+/* ---------- Quick Actions Section ---------- */
+.quick-actions-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.meal-card {
-  border-radius: 24px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-  position: relative;
-  overflow: hidden;
-  user-select: none;
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-.meal-card:hover {
+.action-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.meal-card:active {
+.action-btn:active {
   transform: scale(0.97);
 }
 
-/* Meal Background Colors (Matching Caltalk Reference) */
-.breakfast-card {
-  background: linear-gradient(135deg, #fffdf2 0%, #fef3c7 100%);
-  border: 1px solid rgba(254, 243, 199, 0.8);
+.action-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
-.lunch-card {
-  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
-  border: 1px solid rgba(209, 250, 229, 0.8);
+#btn-log-food-main {
+  background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.dinner-card {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px solid rgba(224, 242, 254, 0.8);
-}
-
-.snack-card {
-  background: linear-gradient(135deg, #f8f5ff 0%, #ede9fe 100%);
-  border: 1px solid rgba(237, 233, 254, 0.8);
-}
-
-.meal-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.meal-card-title {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #1a1a2e;
-}
-
-.meal-add-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #fef08a;
-  color: #1a1a2e;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: transform var(--transition);
-}
-
-.meal-card:hover .meal-add-btn {
-  transform: scale(1.15) rotate(90deg);
-}
-
-.meal-card-body {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.meal-card-icon-wrap {
-  font-size: 2.2rem;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-}
-
-.meal-card-cal {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #4a4a5a;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 4px 10px;
-  border-radius: 12px;
-  backdrop-filter: blur(4px);
+#btn-quick-add-main {
+  background: linear-gradient(135deg, #feca57 0%, #ff9f43 100%);
+  color: #18181b;
+  border: 1px solid rgba(254, 202, 87, 0.8);
 }
 
 /* ---------- Cards ---------- */

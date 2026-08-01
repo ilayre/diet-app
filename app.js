@@ -117,7 +117,9 @@ function calculateBMR(gender, weightKg, heightCm, age) {
 }
 
 function calculateTDEE(profile) {
-  const bmr = calculateBMR(profile.gender, profile.current_weight_kg, profile.height_cm, profile.age);
+  const weight = profile.current_weight_kg || profile.weight;
+  const height = profile.height_cm || profile.height;
+  const bmr = calculateBMR(profile.gender, weight, height, profile.age);
   return Math.round(bmr * (ACTIVITY_MULTIPLIERS[profile.activity_level] || 1.55));
 }
 
@@ -222,7 +224,7 @@ class App {
   // ── Initialization ──
   async init() {
     await this.db.init();
-    this.profile = await this.db.get('profile', 1);
+    this.profile = await this.db.get('profile', 'user_profile');
 
     // Always bind events first so UI is interactive regardless of render errors
     this.bindEvents();
@@ -292,12 +294,8 @@ class App {
     document.getElementById('btn-quick-add').addEventListener('click', () => this.openQuickAddModal());
     document.getElementById('btn-log-weight').addEventListener('click', () => this.openWeightModal());
 
-    document.querySelectorAll('.meal-card, .meal-add-btn').forEach(el => {
-      el.addEventListener('click', (e) => {
-        const meal = el.dataset.meal;
-        if (meal) this.openFoodModal(meal);
-      });
-    });
+    document.getElementById('btn-log-food-main')?.addEventListener('click', () => this.openFoodModal());
+    document.getElementById('btn-quick-add-main')?.addEventListener('click', () => this.openQuickAddModal());
 
     // Food modal & Custom adjustment
     document.getElementById('food-modal-close').addEventListener('click', () => this.closeModal('food-modal'));
@@ -373,7 +371,7 @@ class App {
     const name = document.getElementById('setup-name').value.trim();
     const deficit_target = parseInt(document.getElementById('setup-deficit').value);
 
-    this.profile = { name, gender, age, height, weight, activity_level: activity, deficit_target, created_at: new Date().toISOString() };
+    this.profile = { name, gender, age, height_cm: height, current_weight_kg: weight, activity_level: activity, deficit_target, created_at: new Date().toISOString() };
     await this.db.put('profile', { id: 'user_profile', ...this.profile });
 
     const today = todayStr();
