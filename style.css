@@ -533,6 +533,123 @@ select.form-input {
   color: var(--green);
 }
 
+.card-subtitle-muted {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ---------- 1-Tap Favorites Strip ---------- */
+.favorites-strip {
+  display: flex;
+  gap: 10px;
+  padding: 4px 20px 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.favorites-strip::-webkit-scrollbar { display: none; }
+
+.favorite-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.favorite-pill:hover {
+  background: #fff;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.favorite-pill:active {
+  transform: scale(0.96);
+}
+
+.favorite-pill-icon {
+  font-size: 1.1rem;
+}
+
+.favorite-pill-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.favorite-pill-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.favorite-pill-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.favorite-pill-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin-left: 2px;
+  transition: all var(--transition);
+}
+
+.favorite-pill:hover .favorite-pill-add {
+  background: var(--accent);
+  color: #fff;
+}
+
+.favorites-empty-tip {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  padding: 4px 0 8px;
+}
+
+/* Favorite Toggle Checkbox in Modals */
+.favorite-toggle-row {
+  margin: 16px 0 8px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* ---------- Log List ---------- */
 .log-list {
   padding: 0 20px 14px;
@@ -603,19 +720,47 @@ select.form-input {
   color: var(--text-primary);
 }
 
-.log-item-delete {
+.log-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 10px;
+}
+
+.log-item-btn {
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px 8px;
-  font-size: 1rem;
-  opacity: 0;
-  transition: opacity var(--transition), color var(--transition);
+  padding: 4px 6px;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.log-item:hover .log-item-delete { opacity: 1; }
-.log-item-delete:hover { color: var(--red); }
+.log-item-btn:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.log-item-star {
+  color: #d1d1e0;
+}
+
+.log-item-star.is-starred, .log-item-star:hover {
+  color: #f59e0b;
+}
+
+.log-item-repeat:hover {
+  color: var(--accent);
+}
+
+.log-item-delete:hover {
+  color: var(--red);
+}
 
 /* Meal type headers */
 .meal-group-header {

@@ -123,6 +123,17 @@
         </div>
       </div>
 
+      <!-- 1-Tap Favorites Card -->
+      <div class="card" id="favorites-card">
+        <div class="card-header">
+          <h2 class="card-title">⚡ 1-Tap Favorites</h2>
+          <span class="card-subtitle-muted" id="favorites-count-label">Fast log</span>
+        </div>
+        <div class="favorites-strip" id="favorites-strip">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+
       <!-- Today's Log -->
       <div class="card">
         <div class="card-header">
@@ -389,6 +400,13 @@
           </div>
         </div>
 
+        <div class="favorite-toggle-row">
+          <label class="checkbox-label" for="save-as-favorite-check">
+            <input type="checkbox" id="save-as-favorite-check">
+            <span>⭐ Save to 1-Tap Favorites</span>
+          </label>
+        </div>
+
         <button class="btn btn-primary btn-lg" id="btn-confirm-food">Log This Food</button>
       </div>
     </div>
@@ -418,6 +436,12 @@
             <button type="button" class="meal-tab" data-meal="lunch">🌤️</button>
             <button type="button" class="meal-tab" data-meal="dinner">🌙</button>
           </div>
+        </div>
+        <div class="favorite-toggle-row">
+          <label class="checkbox-label" for="quick-add-favorite-check">
+            <input type="checkbox" id="quick-add-favorite-check">
+            <span>⭐ Save to 1-Tap Favorites</span>
+          </label>
         </div>
         <button type="submit" class="btn btn-primary btn-lg">Add</button>
       </form>

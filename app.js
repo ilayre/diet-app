@@ -10,7 +10,7 @@ class DB {
   constructor() {
     this.db = null;
     this.DB_NAME = 'deficit-tracker';
-    this.DB_VERSION = 1;
+    this.DB_VERSION = 2;
   }
 
   async init() {
@@ -32,6 +32,9 @@ class DB {
         if (!db.objectStoreNames.contains('food_logs')) {
           const fl = db.createObjectStore('food_logs', { keyPath: 'id', autoIncrement: true });
           fl.createIndex('date', 'date', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('favorites')) {
+          db.createObjectStore('favorites', { keyPath: 'id', autoIncrement: true });
         }
       };
       req.onsuccess = (e) => { this.db = e.target.result; resolve(); };
@@ -399,8 +402,11 @@ class App {
     const streak = await this.calculateStreak(allLogs);
     document.getElementById('streak-value').textContent = streak;
 
+    // Render 1-Tap Favorites strip
+    await this.renderFavoritesStrip();
+
     // Render today's log list
-    this.renderTodayLogs(todayLogs);
+    await this.renderTodayLogs(todayLogs);
 
     // Render weight chart
     await this.renderWeightChart();
@@ -439,18 +445,97 @@ class App {
     }
   }
 
-  renderTodayLogs(logs) {
-    const list = document.getElementById('todays-log-list');
-    const empty = document.getElementById('log-empty');
+  // ── 1-Tap Favorites Strip ──
+  async renderFavoritesStrip() {
+    const strip = document.getElementById('favorites-strip');
+    if (!strip) return;
 
-    if (logs.length === 0) {
-      list.innerHTML = '';
-      list.appendChild(empty);
-      empty.style.display = 'block';
+    let favorites = await this.db.getAll('favorites');
+
+    if (favorites.length === 0) {
+      // Auto-suggest top items if no explicit favorites created yet
+      const items = await this.db.getAll('food_items');
+      items.sort((a, b) => (b.use_count || 0) - (a.use_count || 0));
+      const topItems = items.slice(0, 5);
+
+      if (topItems.length > 0) {
+        favorites = topItems.map(item => ({
+          name: item.name,
+          calories: Math.round(item.calories_per_100g * ((item.serving_size_g || 100) / 100)),
+          serving_size: item.serving_size_g || 100,
+          serving_unit: 'g',
+          meal_type: 'snack',
+          food_item_id: item.id,
+          is_suggested: true
+        }));
+      }
+    }
+
+    if (favorites.length === 0) {
+      strip.innerHTML = `
+        <div class="favorites-empty-tip">
+          💡 <strong>1-Tap Fast Logging:</strong> Tap the ⭐ star on any meal or drink in your log to save it here for instant 1-tap logging!
+        </div>`;
       return;
     }
 
-    empty.style.display = 'none';
+    strip.innerHTML = favorites.map(fav => {
+      const mealIcon = MEAL_ICONS[fav.meal_type || 'snack'] || '🍿';
+      return `
+        <div class="favorite-pill" data-fav-name="${this.escapeHtml(fav.name)}" data-fav-cal="${fav.calories}" data-fav-size="${fav.serving_size || ''}" data-fav-unit="${fav.serving_unit || ''}" data-fav-meal="${fav.meal_type || 'snack'}">
+          <span class="favorite-pill-icon">${mealIcon}</span>
+          <div class="favorite-pill-info">
+            <span class="favorite-pill-name">${this.escapeHtml(fav.name)}</span>
+            <span class="favorite-pill-meta">${Math.round(fav.calories)} kcal ${fav.serving_size ? '· ' + fav.serving_size + (fav.serving_unit || 'g') : ''}</span>
+          </div>
+          <span class="favorite-pill-add" title="1-Tap Log">+</span>
+        </div>
+      `;
+    }).join('');
+
+    // Bind 1-tap logging
+    strip.querySelectorAll('.favorite-pill').forEach(pill => {
+      pill.addEventListener('click', async () => {
+        const name = pill.dataset.favName;
+        const calories = parseInt(pill.dataset.favCal);
+        const serving_size = pill.dataset.favSize ? parseFloat(pill.dataset.favSize) : null;
+        const serving_unit = pill.dataset.favUnit || null;
+        const meal_type = pill.dataset.favMeal || this.selectedMeal;
+
+        await this.db.put('food_logs', {
+          food_item_id: null,
+          food_name: name,
+          calories: calories,
+          serving_size: serving_size,
+          serving_unit: serving_unit,
+          meal_type: meal_type,
+          date: todayStr(),
+          logged_at: new Date().toISOString(),
+          is_quick_add: 0
+        });
+
+        await this.renderDashboard();
+        this.toast(`1-Tap Logged ${name} (${calories} kcal) ⚡`);
+      });
+    });
+  }
+
+  async renderTodayLogs(logs) {
+    const list = document.getElementById('todays-log-list');
+    if (!list) return;
+
+    if (logs.length === 0) {
+      list.innerHTML = `
+        <div class="log-empty" id="log-empty">
+          <p>No food logged yet today.</p>
+          <p class="text-muted">Tap below to start logging.</p>
+        </div>`;
+      return;
+    }
+
+    // Fetch favorites to check which items are starred
+    const favorites = await this.db.getAll('favorites');
+    const starredNames = new Set(favorites.map(f => f.name.toLowerCase()));
 
     // Group by meal type
     const groups = {};
@@ -471,6 +556,7 @@ class App {
         <span class="meal-group-total">${total} kcal</span>
       </div>`;
       for (const item of items) {
+        const isStarred = starredNames.has(item.food_name.toLowerCase());
         html += `<div class="log-item" data-id="${item.id}">
           <div class="log-item-left">
             <div class="log-item-info">
@@ -479,11 +565,70 @@ class App {
             </div>
           </div>
           <span class="log-item-calories">${Math.round(item.calories)}</span>
-          <button class="log-item-delete" title="Delete" data-delete-id="${item.id}">&times;</button>
+          <div class="log-item-actions">
+            <button class="log-item-btn log-item-star ${isStarred ? 'is-starred' : ''}" title="${isStarred ? 'Unstar' : 'Pin to 1-Tap Favorites'}" data-star-name="${this.escapeHtml(item.food_name)}" data-star-cal="${item.calories}" data-star-size="${item.serving_size || ''}" data-star-unit="${item.serving_unit || ''}" data-star-meal="${item.meal_type || 'snack'}">★</button>
+            <button class="log-item-btn log-item-repeat" title="Log 1-Tap Again" data-repeat-id="${item.id}">+</button>
+            <button class="log-item-btn log-item-delete" title="Delete" data-delete-id="${item.id}">&times;</button>
+          </div>
         </div>`;
       }
     }
     list.innerHTML = html;
+
+    // Bind star buttons (toggle favorite)
+    list.querySelectorAll('.log-item-star').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const name = btn.dataset.starName;
+        const calories = parseInt(btn.dataset.starCal);
+        const serving_size = btn.dataset.starSize ? parseFloat(btn.dataset.starSize) : null;
+        const serving_unit = btn.dataset.starUnit || null;
+        const meal_type = btn.dataset.starMeal || 'snack';
+
+        const existingFavs = await this.db.getAll('favorites');
+        const match = existingFavs.find(f => f.name.toLowerCase() === name.toLowerCase());
+
+        if (match) {
+          await this.db.delete('favorites', match.id);
+          this.toast(`Removed ${name} from 1-Tap Favorites`);
+        } else {
+          await this.db.put('favorites', {
+            name,
+            calories,
+            serving_size,
+            serving_unit,
+            meal_type,
+            created_at: new Date().toISOString()
+          });
+          this.toast(`Saved ${name} to 1-Tap Favorites ⭐`);
+        }
+        await this.renderDashboard();
+      });
+    });
+
+    // Bind repeat buttons (log 1-tap again)
+    list.querySelectorAll('.log-item-repeat').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.repeatId);
+        const originalLog = logs.find(l => l.id === id);
+        if (originalLog) {
+          await this.db.put('food_logs', {
+            food_item_id: originalLog.food_item_id,
+            food_name: originalLog.food_name,
+            calories: originalLog.calories,
+            serving_size: originalLog.serving_size,
+            serving_unit: originalLog.serving_unit,
+            meal_type: originalLog.meal_type,
+            date: todayStr(),
+            logged_at: new Date().toISOString(),
+            is_quick_add: originalLog.is_quick_add
+          });
+          await this.renderDashboard();
+          this.toast(`Logged ${originalLog.food_name} again ⚡`);
+        }
+      });
+    });
 
     // Bind delete buttons
     list.querySelectorAll('.log-item-delete').forEach(btn => {
@@ -851,6 +996,21 @@ class App {
       is_quick_add: 0
     });
 
+    // Save to 1-Tap Favorites if checked
+    const saveFavCheck = document.getElementById('save-as-favorite-check');
+    if (saveFavCheck && saveFavCheck.checked) {
+      await this.db.put('favorites', {
+        name: food.name,
+        calories: Math.round(calories),
+        serving_size: amount,
+        serving_unit: 'g',
+        meal_type: this.selectedMeal,
+        food_item_id: food.id,
+        created_at: new Date().toISOString()
+      });
+      saveFavCheck.checked = false;
+    }
+
     this.closeModal('food-modal');
     await this.renderDashboard();
     this.toast(`Logged ${Math.round(calories)} kcal ✅`);
@@ -861,6 +1021,8 @@ class App {
     this.showModal('quick-add-modal');
     document.getElementById('quick-add-calories').value = '';
     document.getElementById('quick-add-desc').value = '';
+    const quickFavCheck = document.getElementById('quick-add-favorite-check');
+    if (quickFavCheck) quickFavCheck.checked = false;
 
     // Auto-select meal based on time
     const h = new Date().getHours();
@@ -896,6 +1058,21 @@ class App {
       logged_at: new Date().toISOString(),
       is_quick_add: 1
     });
+
+    // Save to 1-Tap Favorites if checked
+    const quickFavCheck = document.getElementById('quick-add-favorite-check');
+    if (quickFavCheck && quickFavCheck.checked) {
+      await this.db.put('favorites', {
+        name: desc,
+        calories: calories,
+        serving_size: null,
+        serving_unit: null,
+        meal_type: meal,
+        food_item_id: null,
+        created_at: new Date().toISOString()
+      });
+      quickFavCheck.checked = false;
+    }
 
     this.closeModal('quick-add-modal');
     await this.renderDashboard();
@@ -1067,6 +1244,7 @@ class App {
       weight_logs: await this.db.getAll('weight_logs'),
       food_logs: await this.db.getAll('food_logs'),
       food_items: await this.db.getAll('food_items'),
+      favorites: await this.db.getAll('favorites'),
       exported_at: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1085,6 +1263,7 @@ class App {
     await this.db.clearStore('weight_logs');
     await this.db.clearStore('food_logs');
     await this.db.clearStore('food_items');
+    await this.db.clearStore('favorites');
     this.profile = null;
     this.showView('setup');
     this.toast('All data cleared');
