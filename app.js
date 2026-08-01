@@ -493,24 +493,27 @@ class App {
   updateCalorieRing(budget, consumed, remaining) {
     const ring = document.getElementById('ring-progress');
     const numberEl = document.getElementById('remaining-calories');
-    ring.style.strokeDasharray = circumference;
-    ring.style.strokeDashoffset = Math.max(offset, 0);
+    const unitEl = document.getElementById('remaining-unit');
 
-    // Animate number
-    numberEl.textContent = Math.abs(remaining).toLocaleString();
-    const unitEl = display.querySelector('.calorie-unit');
+    const circumference = Math.PI * 75; // ~235.62
+    const progress = budget > 0 ? Math.min(consumed / budget, 1) : 0;
+    const offset = circumference * (1 - progress);
 
-    // Color state
-    display.classList.remove('status-green', 'status-yellow', 'status-red');
-    if (remaining <= 0) {
-      display.classList.add('status-red');
-      unitEl.textContent = 'kcal over 😬';
-    } else if (remaining <= budget * 0.3) {
-      display.classList.add('status-yellow');
-      unitEl.textContent = 'kcal left ⚠️';
-    } else {
-      display.classList.add('status-green');
-      unitEl.textContent = 'kcal left ✅';
+    if (ring) {
+      ring.style.strokeDasharray = circumference;
+      ring.style.strokeDashoffset = Math.max(offset, 0);
+    }
+
+    if (numberEl) {
+      numberEl.textContent = Math.abs(remaining).toLocaleString();
+    }
+
+    if (unitEl) {
+      if (remaining <= 0) {
+        unitEl.innerHTML = `kcal over <span id="budget-value">${budget.toLocaleString()}</span> 😬`;
+      } else {
+        unitEl.innerHTML = `kcal left of <span id="budget-value">${budget.toLocaleString()}</span>`;
+      }
     }
   }
 

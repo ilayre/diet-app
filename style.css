@@ -1133,7 +1133,7 @@ select.form-input {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1000;
+  z-index: 100;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(12px);
 }
@@ -1185,7 +1185,7 @@ select.form-input {
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  z-index: 200;
+  z-index: 2000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
