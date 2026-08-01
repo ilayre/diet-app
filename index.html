@@ -404,6 +404,13 @@
         <button class="btn btn-secondary btn-sm" id="btn-barcode-lookup">Scan</button>
       </div>
 
+      <!-- Create Custom Item Button -->
+      <div class="create-custom-row">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-open-create-custom" style="width: 100%; border-style: dashed;">
+          ✏️ + Create Custom Food / Drink
+        </button>
+      </div>
+
       <!-- Search Results / Recent -->
       <div class="food-list-section">
         <div id="food-recent-section">
@@ -448,6 +455,42 @@
           </div>
         </div>
 
+        <!-- Custom Adjust Toggle & Fields -->
+        <div class="custom-adjust-section">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-custom-adjust">
+            ✏️ Adjust Nutritional Values
+          </button>
+          
+          <div class="custom-adjust-fields hidden" id="custom-adjust-fields">
+            <div class="form-row" style="margin-top: 12px;">
+              <div class="form-group">
+                <label class="form-label">Calories (kcal)</label>
+                <input class="form-input" type="number" id="custom-calories" min="0" step="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Protein (g)</label>
+                <input class="form-input" type="number" id="custom-protein" min="0" step="0.1">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Carbs (g)</label>
+                <input class="form-input" type="number" id="custom-carbs" min="0" step="0.1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fat (g)</label>
+                <input class="form-input" type="number" id="custom-fat" min="0" step="0.1">
+              </div>
+            </div>
+            <div class="favorite-toggle-row" style="margin-top: 4px;">
+              <label class="checkbox-label" for="save-custom-future-check">
+                <input type="checkbox" id="save-custom-future-check" checked>
+                <span>💾 Save custom values for future use</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div class="favorite-toggle-row">
           <label class="checkbox-label" for="save-as-favorite-check">
             <input type="checkbox" id="save-as-favorite-check">
@@ -457,6 +500,49 @@
 
         <button class="btn btn-primary btn-lg" id="btn-confirm-food">Log This Food</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== CREATE CUSTOM ITEM MODAL ==================== -->
+  <div class="modal-overlay hidden" id="create-custom-modal">
+    <div class="modal-content modal-compact">
+      <div class="modal-header">
+        <h2 class="modal-title">✏️ Create Custom Item</h2>
+        <button class="btn-close" id="create-custom-close">&times;</button>
+      </div>
+      <form id="create-custom-form" class="form">
+        <div class="form-group">
+          <label class="form-label" for="new-custom-name">Name</label>
+          <input class="form-input" type="text" id="new-custom-name" placeholder="e.g. Grandma's Soup or Espresso Oat" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="new-custom-calories">Calories (kcal)</label>
+            <input class="form-input" type="number" id="new-custom-calories" min="0" step="1" placeholder="250" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="new-custom-protein">Protein (g)</label>
+            <input class="form-input" type="number" id="new-custom-protein" min="0" step="0.1" placeholder="15">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="new-custom-carbs">Carbs (g)</label>
+            <input class="form-input" type="number" id="new-custom-carbs" min="0" step="0.1" placeholder="30">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="new-custom-fat">Fat (g)</label>
+            <input class="form-input" type="number" id="new-custom-fat" min="0" step="0.1" placeholder="8">
+          </div>
+        </div>
+        <div class="favorite-toggle-row">
+          <label class="checkbox-label" for="new-custom-favorite-check">
+            <input type="checkbox" id="new-custom-favorite-check" checked>
+            <span>⭐ Pin to 1-Tap Favorites</span>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Save & Log</button>
+      </form>
     </div>
   </div>
 

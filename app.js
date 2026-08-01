@@ -286,13 +286,24 @@ class App {
     document.getElementById('btn-quick-add').addEventListener('click', () => this.openQuickAddModal());
     document.getElementById('btn-log-weight').addEventListener('click', () => this.openWeightModal());
 
-    // Food modal
+    // Food modal & Custom adjustment
     document.getElementById('food-modal-close').addEventListener('click', () => this.closeModal('food-modal'));
     document.getElementById('food-search-input').addEventListener('input', (e) => this.handleFoodSearch(e));
     document.getElementById('btn-barcode-lookup').addEventListener('click', () => this.handleBarcodeLookup());
     document.getElementById('food-detail-back').addEventListener('click', () => this.hideFoodDetail());
     document.getElementById('serving-amount').addEventListener('input', () => this.updateNutritionPreview());
     document.getElementById('btn-confirm-food').addEventListener('click', () => this.confirmFoodLog());
+
+    // Custom adjust controls
+    document.getElementById('btn-toggle-custom-adjust').addEventListener('click', () => this.toggleCustomAdjustFields());
+    ['custom-calories', 'custom-protein', 'custom-carbs', 'custom-fat'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => this.onCustomAdjustInput());
+    });
+
+    // Create custom item modal
+    document.getElementById('btn-open-create-custom').addEventListener('click', () => this.openCreateCustomModal());
+    document.getElementById('create-custom-close').addEventListener('click', () => this.closeModal('create-custom-modal'));
+    document.getElementById('create-custom-form').addEventListener('submit', (e) => this.handleCreateCustom(e));
 
     // Meal tabs in food modal
     document.getElementById('meal-tabs').addEventListener('click', (e) => {
@@ -972,9 +983,15 @@ class App {
     document.querySelector('.food-list-section').style.display = 'none';
     document.querySelector('.search-container').style.display = 'none';
     document.querySelector('.barcode-row').style.display = 'none';
+    const customRow = document.querySelector('.create-custom-row');
+    if (customRow) customRow.style.display = 'none';
 
     document.getElementById('food-detail-name').textContent = food.name;
     document.getElementById('food-detail-brand').textContent = food.brand || 'Generic';
+
+    // Hide custom adjust fields by default
+    const adjustFields = document.getElementById('custom-adjust-fields');
+    if (adjustFields) adjustFields.classList.add('hidden');
 
     // Set serving
     const servingAmount = document.getElementById('serving-amount');
@@ -995,7 +1012,42 @@ class App {
     document.querySelector('.food-list-section').style.display = '';
     document.querySelector('.search-container').style.display = '';
     document.querySelector('.barcode-row').style.display = '';
+    const customRow = document.querySelector('.create-custom-row');
+    if (customRow) customRow.style.display = '';
     this.selectedFood = null;
+  }
+
+  toggleCustomAdjustFields() {
+    const fields = document.getElementById('custom-adjust-fields');
+    if (!fields) return;
+    fields.classList.toggle('hidden');
+    if (!fields.classList.contains('hidden')) {
+      this.populateCustomAdjustFields();
+    }
+  }
+
+  populateCustomAdjustFields() {
+    if (!this.selectedFood) return;
+    const amount = parseFloat(document.getElementById('serving-amount').value) || 100;
+    const food = this.selectedFood;
+    const factor = amount / 100;
+
+    document.getElementById('custom-calories').value = Math.round(food.calories_per_100g * factor);
+    document.getElementById('custom-protein').value = ((food.protein_per_100g || 0) * factor).toFixed(1);
+    document.getElementById('custom-carbs').value = ((food.carbs_per_100g || 0) * factor).toFixed(1);
+    document.getElementById('custom-fat').value = ((food.fat_per_100g || 0) * factor).toFixed(1);
+  }
+
+  onCustomAdjustInput() {
+    const cal = parseFloat(document.getElementById('custom-calories').value) || 0;
+    const prot = parseFloat(document.getElementById('custom-protein').value) || 0;
+    const carb = parseFloat(document.getElementById('custom-carbs').value) || 0;
+    const fat = parseFloat(document.getElementById('custom-fat').value) || 0;
+
+    document.getElementById('preview-calories').textContent = Math.round(cal);
+    document.getElementById('preview-protein').textContent = prot.toFixed(1) + 'g';
+    document.getElementById('preview-carbs').textContent = carb.toFixed(1) + 'g';
+    document.getElementById('preview-fat').textContent = fat.toFixed(1) + 'g';
   }
 
   updateNutritionPreview() {
@@ -1008,6 +1060,12 @@ class App {
     document.getElementById('preview-protein').textContent = (food.protein_per_100g * factor).toFixed(1) + 'g';
     document.getElementById('preview-carbs').textContent = (food.carbs_per_100g * factor).toFixed(1) + 'g';
     document.getElementById('preview-fat').textContent = (food.fat_per_100g * factor).toFixed(1) + 'g';
+
+    // If custom adjust section is open, populate it too
+    const adjustFields = document.getElementById('custom-adjust-fields');
+    if (adjustFields && !adjustFields.classList.contains('hidden')) {
+      this.populateCustomAdjustFields();
+    }
   }
 
   async confirmFoodLog() {
@@ -1017,10 +1075,32 @@ class App {
 
     const food = this.selectedFood;
     const factor = amount / 100;
-    const calories = Math.round(food.calories_per_100g * factor);
-    const protein_g = Math.round((food.protein_per_100g || 0) * factor * 10) / 10;
-    const carbs_g = Math.round((food.carbs_per_100g || 0) * factor * 10) / 10;
-    const fat_g = Math.round((food.fat_per_100g || 0) * factor * 10) / 10;
+    const adjustFields = document.getElementById('custom-adjust-fields');
+    const isAdjusted = adjustFields && !adjustFields.classList.contains('hidden');
+
+    let calories, protein_g, carbs_g, fat_g;
+
+    if (isAdjusted) {
+      calories = parseInt(document.getElementById('custom-calories').value) || Math.round(food.calories_per_100g * factor);
+      protein_g = parseFloat(document.getElementById('custom-protein').value) || Math.round((food.protein_per_100g || 0) * factor * 10) / 10;
+      carbs_g = parseFloat(document.getElementById('custom-carbs').value) || Math.round((food.carbs_per_100g || 0) * factor * 10) / 10;
+      fat_g = parseFloat(document.getElementById('custom-fat').value) || Math.round((food.fat_per_100g || 0) * factor * 10) / 10;
+
+      // Save custom values for future use if checked
+      const saveFutureCheck = document.getElementById('save-custom-future-check');
+      if (saveFutureCheck && saveFutureCheck.checked && factor > 0) {
+        food.calories_per_100g = Math.round(calories / factor);
+        food.protein_per_100g = Math.round((protein_g / factor) * 10) / 10;
+        food.carbs_per_100g = Math.round((carbs_g / factor) * 10) / 10;
+        food.fat_per_100g = Math.round((fat_g / factor) * 10) / 10;
+        food.is_customized = true;
+      }
+    } else {
+      calories = Math.round(food.calories_per_100g * factor);
+      protein_g = Math.round((food.protein_per_100g || 0) * factor * 10) / 10;
+      carbs_g = Math.round((food.carbs_per_100g || 0) * factor * 10) / 10;
+      fat_g = Math.round((food.fat_per_100g || 0) * factor * 10) / 10;
+    }
 
     // Save food item to local cache & increment use count
     food.use_count = (food.use_count || 0) + 1;
@@ -1137,6 +1217,87 @@ class App {
     this.closeModal('quick-add-modal');
     await this.renderDashboard();
     this.toast(`Added ${calories} kcal ⚡`);
+  }
+
+  // ── Create Custom Item ──
+  openCreateCustomModal() {
+    this.showModal('create-custom-modal');
+    document.getElementById('new-custom-name').value = '';
+    document.getElementById('new-custom-calories').value = '';
+    document.getElementById('new-custom-protein').value = '';
+    document.getElementById('new-custom-carbs').value = '';
+    document.getElementById('new-custom-fat').value = '';
+    setTimeout(() => document.getElementById('new-custom-name').focus(), 300);
+  }
+
+  async handleCreateCustom(e) {
+    e.preventDefault();
+    const name = document.getElementById('new-custom-name').value.trim();
+    const calories = parseInt(document.getElementById('new-custom-calories').value) || 0;
+    const protein_g = parseFloat(document.getElementById('new-custom-protein').value) || 0;
+    const carbs_g = parseFloat(document.getElementById('new-custom-carbs').value) || 0;
+    const fat_g = parseFloat(document.getElementById('new-custom-fat').value) || 0;
+
+    if (!name || calories <= 0) {
+      this.toast('Enter name and valid calories');
+      return;
+    }
+
+    const customId = 'custom_' + Date.now();
+    const foodItem = {
+      id: customId,
+      name: name,
+      brand: 'Custom',
+      calories_per_100g: calories,
+      protein_per_100g: protein_g,
+      carbs_per_100g: carbs_g,
+      fat_per_100g: fat_g,
+      serving_size_g: 100,
+      is_custom: true,
+      use_count: 1,
+      last_used_at: new Date().toISOString()
+    };
+
+    // Save custom food item
+    await this.db.put('food_items', foodItem);
+
+    // Create food log entry
+    await this.db.put('food_logs', {
+      food_item_id: customId,
+      food_name: name,
+      calories: calories,
+      protein_g: protein_g,
+      carbs_g: carbs_g,
+      fat_g: fat_g,
+      serving_size: 100,
+      serving_unit: 'g',
+      meal_type: this.selectedMeal,
+      date: todayStr(),
+      logged_at: new Date().toISOString(),
+      is_quick_add: 0
+    });
+
+    // Save to 1-Tap Favorites if checked
+    const favCheck = document.getElementById('new-custom-favorite-check');
+    if (favCheck && favCheck.checked) {
+      await this.db.put('favorites', {
+        name: name,
+        calories: calories,
+        protein_g: protein_g,
+        carbs_g: carbs_g,
+        fat_g: fat_g,
+        serving_size: 100,
+        serving_unit: 'g',
+        meal_type: this.selectedMeal,
+        food_item_id: customId,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    this.closeModal('create-custom-modal');
+    this.closeModal('food-modal');
+    await this.renderDashboard();
+    this.toast(`Created & Logged ${name} (${calories} kcal) ✏️`);
   }
 
   // ── Weight Modal ──

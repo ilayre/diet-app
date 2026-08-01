@@ -732,6 +732,21 @@ select.form-input {
   border-radius: var(--radius-md);
 }
 
+.custom-adjust-section {
+  margin: 14px 0 6px;
+}
+
+.custom-adjust-fields {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.create-custom-row {
+  margin-bottom: 16px;
+}
+
 .checkbox-label {
   display: flex;
   align-items: center;
