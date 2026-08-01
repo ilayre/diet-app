@@ -2,10 +2,10 @@
   "name": "Deficit — Personal Weight Loss Tracker",
   "short_name": "Deficit",
   "description": "Stay in caloric deficit every day. Lose weight.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#0b0b12",
-  "theme_color": "#6366f1",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
   "orientation": "portrait",
   "icons": [
     {
