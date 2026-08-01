@@ -281,10 +281,17 @@ class App {
       });
     });
 
-    // Dashboard buttons
+    // Dashboard buttons & Meal Grid Cards
     document.getElementById('btn-log-food').addEventListener('click', () => this.openFoodModal());
     document.getElementById('btn-quick-add').addEventListener('click', () => this.openQuickAddModal());
     document.getElementById('btn-log-weight').addEventListener('click', () => this.openWeightModal());
+
+    document.querySelectorAll('.meal-card, .meal-add-btn').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const meal = el.dataset.meal;
+        if (meal) this.openFoodModal(meal);
+      });
+    });
 
     // Food modal & Custom adjustment
     document.getElementById('food-modal-close').addEventListener('click', () => this.closeModal('food-modal'));
@@ -349,25 +356,18 @@ class App {
   async handleSetup(e) {
     e.preventDefault();
     const weight = parseFloat(document.getElementById('setup-weight').value);
-    this.profile = {
-      id: 1,
-      name: document.getElementById('setup-name').value.trim(),
-      gender: document.getElementById('setup-gender').value,
-      age: parseInt(document.getElementById('setup-age').value),
-      height_cm: parseFloat(document.getElementById('setup-height').value),
-      current_weight_kg: weight,
-      activity_level: document.getElementById('setup-activity').value,
-      deficit_target: parseInt(document.getElementById('setup-deficit').value),
-      created_at: new Date().toISOString()
-    };
-    await this.db.put('profile', this.profile);
+    const height = parseFloat(document.getElementById('setup-height').value);
+    const age = parseInt(document.getElementById('setup-age').value);
+    const gender = document.getElementById('setup-gender').value;
+    const activity = document.getElementById('setup-activity').value;
+    const name = document.getElementById('setup-name').value.trim();
+    const deficit_target = parseInt(document.getElementById('setup-deficit').value);
 
-    // Also log initial weight
-    await this.db.put('weight_logs', {
-      date: todayStr(),
-      weight_kg: weight,
-      logged_at: new Date().toISOString()
-    });
+    this.profile = { name, gender, age, height, weight, activity_level: activity, deficit_target, created_at: new Date().toISOString() };
+    await this.db.put('profile', { id: 'user_profile', ...this.profile });
+
+    const today = todayStr();
+    await this.db.put('weight_logs', { date: today, weight: weight, logged_at: new Date().toISOString() });
 
     this.showView('dashboard');
     await this.renderDashboard();
@@ -387,10 +387,6 @@ class App {
   async renderDashboard() {
     if (!this.profile) return;
 
-    // Update greeting and date
-    document.getElementById('dash-greeting').textContent = `${getGreeting()}, ${this.profile.name}`;
-    document.getElementById('dash-date').textContent = formatDateLong(todayStr());
-
     // Calculate TDEE and budget
     const tdee = calculateTDEE(this.profile);
     const budget = calculateBudget(tdee, this.profile.deficit_target, this.profile.gender);
@@ -402,23 +398,57 @@ class App {
     const consumed = Math.round(todayLogs.reduce((sum, l) => sum + l.calories, 0));
     const remaining = budget - consumed;
 
-    // Update calorie ring
+    // Update calorie arc
     this.updateCalorieRing(budget, consumed, remaining);
 
-    // Update stats
-    document.getElementById('budget-value').textContent = budget.toLocaleString();
-    document.getElementById('consumed-value').textContent = consumed.toLocaleString();
+    // Update budget and streak
+    const budgetEl = document.getElementById('budget-value');
+    if (budgetEl) budgetEl.textContent = budget.toLocaleString();
 
-    // Calculate streak
     const streak = await this.calculateStreak(allLogs);
-    document.getElementById('streak-value').textContent = streak;
+    const streakEl = document.getElementById('streak-value');
+    if (streakEl) streakEl.textContent = streak;
+
+    // Update Meal Grid Totals
+    const mealTotals = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+    todayLogs.forEach(log => {
+      const type = log.meal_type || 'snack';
+      if (mealTotals[type] !== undefined) {
+        mealTotals[type] += log.calories;
+      }
+    });
+
+    ['breakfast', 'lunch', 'dinner', 'snack'].forEach(m => {
+      const el = document.getElementById(`meal-cal-${m}`);
+      if (el) el.textContent = `${Math.round(mealTotals[m])} kcal`;
+    });
 
     // Calculate today's macro nutrition totals
     const totalProtein = Math.round(todayLogs.reduce((sum, l) => sum + (l.protein_g || 0), 0) * 10) / 10;
     const totalCarbs = Math.round(todayLogs.reduce((sum, l) => sum + (l.carbs_g || 0), 0) * 10) / 10;
     const totalFat = Math.round(todayLogs.reduce((sum, l) => sum + (l.fat_g || 0), 0) * 10) / 10;
 
-    this.renderNutritionSummary(totalProtein, totalCarbs, totalFat);
+    // Macro targets based on typical split (30% Protein, 45% Carbs, 25% Fat)
+    const pTarget = Math.round((budget * 0.30) / 4);
+    const cTarget = Math.round((budget * 0.45) / 4);
+    const fTarget = Math.round((budget * 0.25) / 9);
+
+    const elProt = document.getElementById('total-protein');
+    const elCarb = document.getElementById('total-carbs');
+    const elFat = document.getElementById('total-fat');
+    if (elProt) elProt.textContent = `${totalProtein}g`;
+    if (elCarb) elCarb.textContent = `${totalCarbs}g`;
+    if (elFat) elFat.textContent = `${totalFat}g`;
+
+    const subP = document.getElementById('col-protein-sub');
+    const subC = document.getElementById('col-carbs-sub');
+    const subF = document.getElementById('col-fat-sub');
+    if (subP) subP.textContent = `${Math.round(totalProtein)} / ${pTarget}g`;
+    if (subC) subC.textContent = `${Math.round(totalCarbs)} / ${cTarget}g`;
+    if (subF) subF.textContent = `${Math.round(totalFat)} / ${fTarget}g`;
+
+    // Render Week Day Selector Strip (S M T W T F S)
+    this.renderWeekStrip(allLogs);
 
     // Render 1-Tap Favorites strip
     await this.renderFavoritesStrip();
@@ -433,44 +463,36 @@ class App {
     this.autoSelectMealType();
   }
 
-  renderNutritionSummary(pG, cG, fG) {
-    const pCal = Math.round(pG * 4);
-    const cCal = Math.round(cG * 4);
-    const fCal = Math.round(fG * 9);
-    const totalMacroCal = pCal + cCal + fCal;
+  renderWeekStrip(allLogs) {
+    const today = new Date();
+    const currentDayIdx = today.getDay(); // 0 = Sun, 6 = Sat
 
-    const elProt = document.getElementById('total-protein');
-    const elCarb = document.getElementById('total-carbs');
-    const elFat = document.getElementById('total-fat');
-    if (!elProt || !elCarb || !elFat) return;
+    // Calculate dates for current week (Sun-Sat)
+    const sun = new Date(today);
+    sun.setDate(today.getDate() - currentDayIdx);
 
-    elProt.textContent = `${pG}g`;
-    document.getElementById('cal-protein').textContent = `${pCal} kcal`;
-    elCarb.textContent = `${cG}g`;
-    document.getElementById('cal-carbs').textContent = `${cCal} kcal`;
-    elFat.textContent = `${fG}g`;
-    document.getElementById('cal-fat').textContent = `${fCal} kcal`;
+    const weekBubbles = document.querySelectorAll('#week-strip .day-bubble');
+    weekBubbles.forEach((bubble, idx) => {
+      const d = new Date(sun);
+      d.setDate(sun.getDate() + idx);
+      const dateStr = d.toISOString().split('T')[0];
 
-    const pPct = totalMacroCal > 0 ? Math.round((pCal / totalMacroCal) * 100) : 0;
-    const cPct = totalMacroCal > 0 ? Math.round((cCal / totalMacroCal) * 100) : 0;
-    const fPct = totalMacroCal > 0 ? Math.max(0, 100 - pPct - cPct) : 0;
+      bubble.classList.remove('active', 'completed');
+      if (idx === currentDayIdx) {
+        bubble.classList.add('active');
+      }
 
-    document.getElementById('macro-bar-protein').style.width = `${pPct}%`;
-    document.getElementById('macro-bar-carbs').style.width = `${cPct}%`;
-    document.getElementById('macro-bar-fat').style.width = `${fPct}%`;
-
-    document.getElementById('macro-ratio-label').textContent = `${pPct}% P · ${cPct}% C · ${fPct}% F`;
+      // Check if day was completed with logged food
+      const dayLogs = allLogs.filter(l => l.date === dateStr);
+      if (dayLogs.length > 0) {
+        bubble.classList.add('completed');
+      }
+    });
   }
 
   updateCalorieRing(budget, consumed, remaining) {
-    const display = document.getElementById('calorie-display');
     const ring = document.getElementById('ring-progress');
     const numberEl = document.getElementById('remaining-calories');
-
-    const circumference = 2 * Math.PI * 85; // r=85
-    const progress = Math.min(consumed / budget, 1.5); // allow overshoot visual
-    const offset = circumference * (1 - progress);
-
     ring.style.strokeDasharray = circumference;
     ring.style.strokeDashoffset = Math.max(offset, 0);
 
@@ -861,7 +883,10 @@ class App {
   }
 
   // ── Food Modal ──
-  openFoodModal() {
+  openFoodModal(meal = null) {
+    if (meal) {
+      this.selectedMeal = meal;
+    }
     this.showModal('food-modal');
     this.hideFoodDetail();
     document.getElementById('food-search-input').value = '';
@@ -988,6 +1013,12 @@ class App {
 
     document.getElementById('food-detail-name').textContent = food.name;
     document.getElementById('food-detail-brand').textContent = food.brand || 'Generic';
+
+    const confirmBtn = document.getElementById('btn-confirm-food');
+    if (confirmBtn) {
+      const mealName = (this.selectedMeal || 'meal').charAt(0).toUpperCase() + (this.selectedMeal || 'meal').slice(1);
+      confirmBtn.textContent = `+ Add to ${mealName}`;
+    }
 
     // Hide custom adjust fields by default
     const adjustFields = document.getElementById('custom-adjust-fields');

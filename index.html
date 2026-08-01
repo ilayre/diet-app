@@ -84,92 +84,153 @@
 
     <!-- ==================== DASHBOARD VIEW ==================== -->
     <section id="dashboard-view" class="view hidden">
-      <header class="dash-header">
-        <div>
-          <p class="dash-greeting" id="dash-greeting">Good morning</p>
-          <h1 class="dash-date" id="dash-date">Today</h1>
+      <!-- Top Brand Header -->
+      <header class="dash-top-bar">
+        <div class="dash-brand">
+          <div class="dash-brand-icon">🔥</div>
+          <span class="dash-brand-title">Deficit</span>
         </div>
-        <button class="btn-icon" id="btn-log-weight" title="Log weight">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
-          <span>Weight</span>
-        </button>
+        <div class="dash-top-actions">
+          <div class="streak-badge" title="Active Day Streak">
+            <span class="streak-fire">🔥</span>
+            <span class="streak-count" id="streak-value">0</span>
+            <span class="streak-unit">days</span>
+          </div>
+          <button class="btn-icon" id="btn-log-weight" title="Log weight">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18"/></svg>
+          </button>
+        </div>
       </header>
 
-      <!-- Calorie Ring -->
-      <div class="calorie-display" id="calorie-display">
-        <svg class="calorie-ring" viewBox="0 0 200 200">
-          <circle class="ring-track" cx="100" cy="100" r="85"/>
-          <circle class="ring-progress" id="ring-progress" cx="100" cy="100" r="85"/>
-        </svg>
-        <div class="calorie-center">
-          <span class="calorie-number" id="remaining-calories">—</span>
-          <span class="calorie-unit">kcal left</span>
-        </div>
+      <!-- Weekly Day Tracker Strip (S M T W T F S) -->
+      <div class="week-strip" id="week-strip">
+        <div class="day-bubble" data-day="0"><span class="day-letter">S</span><div class="day-circle"></div></div>
+        <div class="day-bubble" data-day="1"><span class="day-letter">M</span><div class="day-circle"></div></div>
+        <div class="day-bubble" data-day="2"><span class="day-letter">T</span><div class="day-circle"></div></div>
+        <div class="day-bubble" data-day="3"><span class="day-letter">W</span><div class="day-circle"></div></div>
+        <div class="day-bubble" data-day="4"><span class="day-letter">T</span><div class="day-circle"></div></div>
+        <div class="day-bubble" data-day="5"><span class="day-letter">F</span><div class="day-circle"></div></div>
+        <div class="day-bubble" data-day="6"><span class="day-letter">S</span><div class="day-circle"></div></div>
       </div>
 
-      <!-- Stats Row -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <span class="stat-value" id="budget-value">—</span>
-          <span class="stat-label">Budget</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="consumed-value">0</span>
-          <span class="stat-label">Consumed</span>
-        </div>
-        <div class="stat-card accent">
-          <span class="stat-value" id="streak-value">0</span>
-          <span class="stat-label">Day Streak 🔥</span>
-        </div>
-      </div>
+      <!-- Hero Calorie Gradient Arc Gauge -->
+      <div class="hero-gauge-card">
+        <div class="calorie-display" id="calorie-display">
+          <svg class="calorie-arc-svg" viewBox="0 0 200 135">
+            <defs>
+              <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff5252" />
+                <stop offset="50%" stop-color="#ff9f43" />
+                <stop offset="100%" stop-color="#feca57" />
+              </linearGradient>
+            </defs>
+            <!-- Background Arc Track -->
+            <path class="arc-track" d="M 25 115 A 75 75 0 0 1 175 115" fill="none" stroke-width="16" stroke-linecap="round" />
+            <!-- Animated Progress Arc -->
+            <path class="arc-progress" id="ring-progress" d="M 25 115 A 75 75 0 0 1 175 115" fill="none" stroke="url(#arcGradient)" stroke-width="16" stroke-linecap="round" />
+          </svg>
 
-      <!-- Daily Nutrition Summary Card -->
-      <div class="card" id="nutrition-card">
-        <div class="card-header">
-          <h2 class="card-title">Nutrition Summary</h2>
-          <span class="card-subtitle-muted">Macros</span>
-        </div>
-        <div class="card-body">
-          <div class="macro-grid">
-            <div class="macro-card protein">
-              <div class="macro-card-header">
-                <span class="macro-icon">🥩</span>
-                <span class="macro-title">Protein</span>
-              </div>
-              <div class="macro-value" id="total-protein">0g</div>
-              <div class="macro-cal" id="cal-protein">0 kcal</div>
-            </div>
-            <div class="macro-card carbs">
-              <div class="macro-card-header">
-                <span class="macro-icon">🍞</span>
-                <span class="macro-title">Carbs</span>
-              </div>
-              <div class="macro-value" id="total-carbs">0g</div>
-              <div class="macro-cal" id="cal-carbs">0 kcal</div>
-            </div>
-            <div class="macro-card fat">
-              <div class="macro-card-header">
-                <span class="macro-icon">🥑</span>
-                <span class="macro-title">Fat</span>
-              </div>
-              <div class="macro-value" id="total-fat">0g</div>
-              <div class="macro-cal" id="cal-fat">0 kcal</div>
-            </div>
+          <div class="calorie-center">
+            <div class="calorie-number" id="remaining-calories">—</div>
+            <div class="calorie-unit" id="remaining-unit">kcal left of <span id="budget-value">2,100</span></div>
           </div>
-          
-          <div class="macro-bar-container">
-            <div class="macro-bar-labels">
-              <span>Ratio Breakdown</span>
-              <span id="macro-ratio-label">0% P · 0% C · 0% F</span>
+        </div>
+
+        <!-- 3 Sleek Macro Progress Columns -->
+        <div class="macro-columns-row">
+          <div class="macro-col protein-col">
+            <div class="macro-col-header">
+              <span class="macro-indicator protein-ind"></span>
+              <span class="macro-col-title">Protein</span>
             </div>
-            <div class="macro-bar">
-              <div class="macro-bar-fill protein-fill" id="macro-bar-protein" style="width: 0%"></div>
-              <div class="macro-bar-fill carbs-fill" id="macro-bar-carbs" style="width: 0%"></div>
-              <div class="macro-bar-fill fat-fill" id="macro-bar-fat" style="width: 0%"></div>
+            <div class="macro-col-val"><span id="total-protein">0g</span></div>
+            <div class="macro-col-sub" id="col-protein-sub">0 / 120g</div>
+          </div>
+
+          <div class="macro-col carbs-col">
+            <div class="macro-col-header">
+              <span class="macro-indicator carbs-ind"></span>
+              <span class="macro-col-title">Carbs</span>
             </div>
+            <div class="macro-col-val"><span id="total-carbs">0g</span></div>
+            <div class="macro-col-sub" id="col-carbs-sub">0 / 200g</div>
+          </div>
+
+          <div class="macro-col fat-col">
+            <div class="macro-col-header">
+              <span class="macro-indicator fat-ind"></span>
+              <span class="macro-col-title">Fat</span>
+            </div>
+            <div class="macro-col-val"><span id="total-fat">0g</span></div>
+            <div class="macro-col-sub" id="col-fat-sub">0 / 65g</div>
           </div>
         </div>
       </div>
+
+      <!-- 2x2 Meal Category Grid (Breakfast, Lunch, Dinner, Snacks) -->
+      <div class="meal-grid-section">
+        <div class="meal-grid">
+          <!-- Breakfast -->
+          <div class="meal-card breakfast-card" data-meal="breakfast">
+            <div class="meal-card-top">
+              <span class="meal-card-title">Breakfast</span>
+              <button class="meal-add-btn" data-meal="breakfast" title="Log Breakfast">+</button>
+            </div>
+            <div class="meal-card-body">
+              <div class="meal-card-icon-wrap">🍳</div>
+              <div class="meal-card-cal" id="meal-cal-breakfast">0 kcal</div>
+            </div>
+          </div>
+
+          <!-- Lunch -->
+          <div class="meal-card lunch-card" data-meal="lunch">
+            <div class="meal-card-top">
+              <span class="meal-card-title">Lunch</span>
+              <button class="meal-add-btn" data-meal="lunch" title="Log Lunch">+</button>
+            </div>
+            <div class="meal-card-body">
+              <div class="meal-card-icon-wrap">🥗</div>
+              <div class="meal-card-cal" id="meal-cal-lunch">0 kcal</div>
+            </div>
+          </div>
+
+          <!-- Dinner -->
+          <div class="meal-card dinner-card" data-meal="dinner">
+            <div class="meal-card-top">
+              <span class="meal-card-title">Dinner</span>
+              <button class="meal-add-btn" data-meal="dinner" title="Log Dinner">+</button>
+            </div>
+            <div class="meal-card-body">
+              <div class="meal-card-icon-wrap">🍽️</div>
+              <div class="meal-card-cal" id="meal-cal-dinner">0 kcal</div>
+            </div>
+          </div>
+
+          <!-- Snacks -->
+          <div class="meal-card snack-card" data-meal="snack">
+            <div class="meal-card-top">
+              <span class="meal-card-title">Snacks</span>
+              <button class="meal-add-btn" data-meal="snack" title="Log Snack">+</button>
+            </div>
+            <div class="meal-card-body">
+              <div class="meal-card-icon-wrap">🍿</div>
+              <div class="meal-card-cal" id="meal-cal-snack">0 kcal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden elements for backward compatibility -->
+      <span id="consumed-value" class="hidden">0</span>
+      <span id="dash-greeting" class="hidden"></span>
+      <span id="dash-date" class="hidden"></span>
+      <span id="cal-protein" class="hidden"></span>
+      <span id="cal-carbs" class="hidden"></span>
+      <span id="cal-fat" class="hidden"></span>
+      <span id="macro-ratio-label" class="hidden"></span>
+      <div id="macro-bar-protein" class="hidden"></div>
+      <div id="macro-bar-carbs" class="hidden"></div>
+      <div id="macro-bar-fat" class="hidden"></div>
 
       <!-- 1-Tap Favorites Card -->
       <div class="card" id="favorites-card">
@@ -190,12 +251,12 @@
         <div id="todays-log-list" class="log-list">
           <div class="log-empty" id="log-empty">
             <p>No food logged yet today.</p>
-            <p class="text-muted">Tap below to start logging.</p>
+            <p class="text-muted">Tap a meal card above to start logging.</p>
           </div>
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Quick Action Floating Row -->
       <div class="action-buttons">
         <button class="btn btn-primary btn-action" id="btn-log-food">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>

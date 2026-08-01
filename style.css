@@ -369,133 +369,325 @@ select.form-input {
   padding: 4px 0;
 }
 
-/* ---------- Dashboard Header ---------- */
-.dash-header {
+/* ---------- Top Brand Header ---------- */
+.dash-top-bar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 28px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 4px 4px;
 }
 
-.dash-greeting {
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  margin-bottom: 2px;
+.dash-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.dash-date {
-  font-size: 1.3rem;
+.dash-brand-icon {
+  width: 34px;
+  height: 34px;
+  background: #ffefed;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.dash-brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.dash-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.streak-fire { font-size: 0.9rem; }
+.streak-count { font-weight: 800; font-size: 0.9rem; color: var(--text-primary); }
+.streak-unit { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+
+/* ---------- Week Strip (S M T W T F S) ---------- */
+.week-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 12px 16px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.day-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-letter {
+  font-size: 0.75rem;
   font-weight: 700;
+  color: var(--text-muted);
 }
 
-/* ---------- Calorie Ring ---------- */
+.day-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f2f2f7;
+  border: 2px solid transparent;
+  transition: all var(--transition);
+}
+
+.day-bubble.active .day-letter {
+  color: #ff5757;
+}
+
+.day-bubble.active .day-circle {
+  border-color: #ff5757;
+  background: #fff;
+}
+
+.day-bubble.completed .day-circle {
+  background: linear-gradient(135deg, #ff7675, #fdcb6e);
+  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.4);
+}
+
+/* ---------- Hero Calorie Arc Gauge Card ---------- */
+.hero-gauge-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 24px 20px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
 .calorie-display {
   position: relative;
-  width: 210px;
-  height: 210px;
-  margin: 0 auto 28px;
+  width: 220px;
+  height: 140px;
+  margin: 0 auto 10px;
 }
 
-.calorie-ring {
+.calorie-arc-svg {
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg);
 }
 
-.ring-track {
-  fill: none;
-  stroke: var(--bg-primary);
-  stroke-width: 11;
+.arc-track {
+  stroke: #f2f2f7;
 }
 
-.ring-progress {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 11;
-  stroke-linecap: round;
-  stroke-dasharray: 534.07;
+.arc-progress {
+  stroke-dasharray: 235.619;
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-              stroke 0.5s ease;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .calorie-center {
   position: absolute;
-  top: 50%;
+  top: 60px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   text-align: center;
+  width: 100%;
 }
 
 .calorie-number {
-  display: block;
-  font-size: 2.6rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 2.75rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #1a1a2e;
   line-height: 1;
-  transition: color 0.5s ease;
-  color: var(--text-primary);
 }
 
 .calorie-unit {
-  display: block;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--text-muted);
-  font-weight: 500;
   margin-top: 4px;
 }
 
-/* Ring color states */
-.status-green .calorie-number { color: var(--green); }
-.status-green .ring-progress { stroke: var(--green); }
-
-.status-yellow .calorie-number { color: var(--yellow); }
-.status-yellow .ring-progress { stroke: var(--yellow); }
-
-.status-red .calorie-number { color: var(--red); }
-.status-red .ring-progress { stroke: var(--red); }
-
-/* ---------- Stats Row ---------- */
-.stats-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: var(--bg-card);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 14px 10px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition);
-}
-
-.stat-card:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.stat-card.accent {
-  background: var(--accent-light);
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.3rem;
+.calorie-unit span {
   font-weight: 700;
-  margin-bottom: 2px;
   color: var(--text-primary);
 }
 
-.stat-label {
-  display: block;
+/* Macro Columns inside Hero Card */
+.macro-columns-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f2f7;
+}
+
+.macro-col {
+  text-align: center;
+}
+
+.macro-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.macro-indicator {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.protein-ind { background: #ff5252; }
+.carbs-ind { background: #00cec9; }
+.fat-ind { background: #ff9f43; }
+
+.macro-col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.macro-col-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.macro-col-sub {
   font-size: 0.7rem;
-  color: var(--text-muted);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* ---------- 2x2 Meal Category Cards Grid ---------- */
+.meal-grid-section {
+  margin-bottom: 20px;
+}
+
+.meal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.meal-card {
+  border-radius: 24px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.meal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.meal-card:active {
+  transform: scale(0.97);
+}
+
+/* Meal Background Colors (Matching Caltalk Reference) */
+.breakfast-card {
+  background: linear-gradient(135deg, #fffdf2 0%, #fef3c7 100%);
+  border: 1px solid rgba(254, 243, 199, 0.8);
+}
+
+.lunch-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+  border: 1px solid rgba(209, 250, 229, 0.8);
+}
+
+.dinner-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid rgba(224, 242, 254, 0.8);
+}
+
+.snack-card {
+  background: linear-gradient(135deg, #f8f5ff 0%, #ede9fe 100%);
+  border: 1px solid rgba(237, 233, 254, 0.8);
+}
+
+.meal-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.meal-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.meal-add-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fef08a;
+  color: #1a1a2e;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform var(--transition);
+}
+
+.meal-card:hover .meal-add-btn {
+  transform: scale(1.15) rotate(90deg);
+}
+
+.meal-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meal-card-icon-wrap {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.meal-card-cal {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #4a4a5a;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 10px;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
 }
 
 /* ---------- Cards ---------- */
@@ -929,20 +1121,21 @@ select.form-input {
 /* ---------- Bottom Navigation ---------- */
 .bottom-nav {
   position: fixed;
-  bottom: 12px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);
-  max-width: 460px;
-  height: 58px;
-  background: var(--text-primary);
-  border-radius: 20px;
+  max-width: 420px;
+  height: 62px;
+  background: #18181b;
+  border-radius: 36px;
+  padding: 6px 8px;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  gap: 0;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
 }
 
 .nav-btn {
@@ -950,34 +1143,38 @@ select.form-input {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
-  padding: 8px 0;
+  padding: 8px 12px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: #a1a1aa;
   font-family: var(--font);
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: color var(--transition);
+  border-radius: 24px;
+  transition: all var(--transition);
   -webkit-tap-highlight-color: transparent;
 }
 
 .nav-btn svg {
   stroke: currentColor;
+  transition: transform 0.2s ease;
 }
 
 .nav-btn.active {
+  background: #27272a;
   color: #ffffff;
 }
 
-.nav-btn:hover {
-  color: rgba(255, 255, 255, 0.7);
+.nav-btn.active svg {
+  stroke: #ff5757;
+  transform: scale(1.1);
 }
 
-.nav-btn.active:hover {
+.nav-btn:hover {
   color: #ffffff;
 }
 
@@ -1247,45 +1444,51 @@ select.form-input {
 }
 
 .nutrition-preview {
-  background: var(--bg-primary);
-  border: none;
-  border-radius: var(--radius-lg);
-  padding: 22px;
+  background: linear-gradient(135deg, #f8f9fc 0%, #f1f3f9 100%);
+  border: 1px solid var(--border-medium);
+  border-radius: 20px;
+  padding: 20px;
   margin-bottom: 16px;
   text-align: center;
 }
 
 .nutrition-big {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .nutrition-big-value {
-  font-size: 2.5rem;
-  font-weight: 800;
+  font-size: 2.75rem;
+  font-weight: 900;
   color: var(--text-primary);
+  letter-spacing: -0.03em;
 }
 
 .nutrition-big-label {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 700;
   margin-left: 4px;
 }
 
 .nutrition-macros {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .macro {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
+  background: #fff;
+  padding: 10px 8px;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 .macro span:first-child {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.1rem;
   color: var(--text-primary);
 }
@@ -1293,6 +1496,7 @@ select.form-input {
 .macro span:last-child {
   font-size: 0.7rem;
   color: var(--text-muted);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
